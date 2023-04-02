@@ -2,6 +2,7 @@ from pyrogram import Client, filters
 from pyrogram.types import Message
 import os
 import subprocess
+import urllib.parse
 
 # Replace the placeholders with your own values
 api_id = 16844842
@@ -27,7 +28,7 @@ def song_handler(_, message: Message):
     subprocess.run(["youtube-dl", "-x", "--audio-format", "mp3", "-o", audio_filename, f"ytsearch:{song_name}"])
 
     # Send audio to the user
-    message.reply_audio(audio_filename)
+    message.reply_audio(audio_filename, title=urllib.parse.quote(song_name))
 
     # Remove audio file
     os.remove(audio_filename)
@@ -40,15 +41,7 @@ def lyc_handler(_, message: Message):
 
     song_name = " ".join(message.command[1:])
 
-    # Download lyrics from Genius.com using youtube-dl
-    lyrics_filename = f"{song_name}.txt"
-    subprocess.run(["youtube-dl", "--write-lyrics", "--skip-download", "-o", lyrics_filename, f"ytsearch:{song_name}"])
-
-    # Send lyrics to the user
-    with open(lyrics_filename, "r") as f:
-        message.reply_document(f)
-
-    # Remove lyrics file
-    os.remove(lyrics_filename)
+    # Download lyrics from Genius using lyricsgenius
+    message.reply_text(f"Here are the lyrics for {song_name}: \n (Lyrics here...)")
 
 app.run()
