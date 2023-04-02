@@ -20,7 +20,7 @@ bot = Client(
     bot_token="5931504207:AAHNzBcYEEX7AD29L0TqWF28axqivgoaKUk"  # Replace with your bot token
 )
 
-GENIUS = lyricsgenius.Genius(Config.TOKEN)
+GENIUS = lyricsgenius.Genius("bwQCIfxQqXqkuEFiXt6xY387J-L9b9GgfnHph85YcP0EQvC9ZpWG-js7okipBsFe")
 
 
 @bot.on_message(filters.command("start") & filters.private)
