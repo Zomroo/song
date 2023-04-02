@@ -10,7 +10,7 @@ app = pyrogram.Client('my_bot', api_id, api_hash, bot_token=bot_token)
 
 
 def fetch_lyrics(song_name):
-    genius = lyricsgenius.Genius("<your-genius-api-key>")
+    genius = lyricsgenius.Genius("kg79BGCBAb_FdSrL8V8tA-FRnB47QlKWDeyty0bE2XIFZfkCro7A29315GkJ3i1H")
     song = genius.search_song(song_name)
     if song:
         return song.lyrics
