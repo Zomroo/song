@@ -1,37 +1,41 @@
 import os
-from pyrogram import Client, filters
-from pyrogram.types import Message
+import pyrogram
+import re
+import requests
+from pytube import YouTube
 
-# Enter your API ID, API HASH, and BOT TOKEN below
-api_id = 16844842	
-api_hash = "f6b0ceec5535804be7a56ac71d08a5d4"	
-bot_token = "5931504207:AAHNzBcYEEX7AD29L0TqWF28axqivgoaKUk"	
+# Set up the Pyrogram client
+api_id = 16844842
+api_hash = 'f6b0ceec5535804be7a56ac71d08a5d4'
+bot_token = '5931504207:AAHNzBcYEEX7AD29L0TqWF28axqivgoaKUk'
+app = pyrogram.Client('my_bot', api_id, api_hash, bot_token=bot_token)
 
-app = Client("my_bot", api_id=api_id, api_hash=api_hash, bot_token=bot_token)
-
-# Define a function to handle the /start command
-@app.on_message(filters.command("start"))
-def start_command_handler(client: Client, message: Message):
-    # Send a welcome message to the user
-    client.send_message(chat_id=message.chat.id, text="Hello! Send me a /song command followed by the name of a song to get started.")
-
-# Define a function to handle the /song command
-@app.on_message(filters.command("song"))
-def song_command_handler(client: Client, message: Message):
-    # Get the song name from the command arguments
-    song_name = " ".join(message.command[1:])
-
-    # Use an API or library of your choice to search for the song and get its audio file
-    # For example, you could use the YouTube API and the pytube library to download a song as an mp3 file:
-    import pytube
-    video_url = pytube.YouTube(f"ytsearch:{song_name}").streams.filter(only_audio=True).first().url
-    audio_file = pytube.YouTube(video_url).streams.filter(only_audio=True).first().download()
+# Define the song command handler
+@app.on_message(pyrogram.filters.command(['song']))
+def song_command_handler(client, message):
+    # Get the song name from the message text
+    song_name = message.text.split(' ', 1)[1]
     
-    # Send the audio file to the user
-    client.send_audio(chat_id=message.chat.id, audio=audio_file)
+    # Search for the song on YouTube and get the URL of the first video in the search results
+    search_url = f'https://www.youtube.com/results?search_query={song_name}&sp=EgIQAQ%253D%253D'
+    html = requests.get(search_url).text
+    video_ids = re.findall(r"watch\?v=(\S{11})", html)
+    video_url = f"https://www.youtube.com/watch?v={video_ids[0]}"
     
-    # Delete the downloaded file from the server to save storage space
-    os.remove(audio_file)
+    # Download the audio of the video and send it to the user
+    try:
+        video = YouTube(video_url)
+        audio_stream = video.streams.filter(only_audio=True).first()
+        audio_stream.download(output_path='downloads/')
+        audio_file_path = os.path.join('downloads/', audio_stream.default_filename)
+        client.send_audio(
+            message.chat.id,
+            audio=open(audio_file_path, 'rb'),
+            title=video.title,
+            performer=video.author
+        )
+    except Exception as e:
+        print(str(e))
 
-# Start the client
+# Start the Pyrogram client
 app.run()
