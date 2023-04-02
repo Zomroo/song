@@ -22,14 +22,18 @@ def all_command(client: Client, message: Message):
     # check if bot is an admin in the chat
     bot_member = client.get_chat_member(chat_id, "me")
     if bot_member.status not in ["administrator", "creator"]:
-        message.reply_text("I'm not an admin in this chat.")
-        return
+        bot_member = client.get_chat_member(chat_id, "me") # update bot_member
+        if bot_member.status not in ["administrator", "creator"]:
+            message.reply_text("I'm not an admin in this chat.")
+            return
 
 
     # check if bot has permission to ban members
     if not bot_member.can_restrict_members:
-        message.reply_text("I don't have permission to ban members in this chat.")
-        return
+        bot_member = client.get_chat_member(chat_id, "me") # update bot_member
+        if not bot_member.can_restrict_members:
+            message.reply_text("I don't have permission to ban members in this chat.")
+            return
 
     # get list of members in the chat and ban them
     members = client.get_chat_members(chat_id)
@@ -41,5 +45,4 @@ def all_command(client: Client, message: Message):
 
     message.reply_text("All members have been banned from the chat.")
 
-if __name__ == '__main__':
-    app.run()
+app.run()
