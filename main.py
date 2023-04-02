@@ -1,5 +1,6 @@
 from pyrogram import Client, filters
 import lyricsgenius
+import pyrogram
 
 # Set up the Pyrogram client
 api_id = 16844842
