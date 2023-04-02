@@ -2,13 +2,12 @@ from pyrogram import Client, filters
 import requests
 import os
 
-# Replace with your own values
-API_ID = your_api_id
-API_HASH = 'your_api_hash'
-BOT_TOKEN = 'your_bot_token'
+# Set up the Pyrogram client
+api_id = 16844842
+api_hash = 'f6b0ceec5535804be7a56ac71d08a5d4'
+bot_token = '5931504207:AAHNzBcYEEX7AD29L0TqWF28axqivgoaKUk'
+app = pyrogram.Client('my_bot', api_id, api_hash, bot_token=bot_token)
 
-# Create a Pyrogram client
-bot = Client('my_bot', api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
 
 # Define a function to fetch lyrics of a song
 def get_lyrics(song_name):
