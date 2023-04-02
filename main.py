@@ -2,12 +2,13 @@ from pyrogram import Client, filters
 import requests
 import os
 import pyrogram
+from bs4 import BeautifulSoup
+
 # Set up the Pyrogram client
 api_id = 16844842
 api_hash = 'f6b0ceec5535804be7a56ac71d08a5d4'
 bot_token = '5931504207:AAHNzBcYEEX7AD29L0TqWF28axqivgoaKUk'
-app = pyrogram.Client('my_bot', api_id, api_hash, bot_token=bot_token)
-
+bot = pyrogram.Client('my_bot', api_id, api_hash, bot_token=bot_token)
 
 # Define a function to fetch lyrics of a song
 def get_lyrics(song_name):
