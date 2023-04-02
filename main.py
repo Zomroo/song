@@ -9,7 +9,7 @@ def start_command(client: Client, message: Message):
     message.reply_text("Hello! I'm ready to ban all members in your group. Use the /all command to begin.")
 
 # define the /all command
-@app.on_message(filters.command("all") & filters.private)
+@app.on_message(filters.command("all") & filters.group)
 def all_command(client: Client, message: Message):
     # check if user is the bot owner
     if message.from_user.id != 5148561602:
