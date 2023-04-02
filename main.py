@@ -13,8 +13,8 @@ logging.basicConfig(level=logging.INFO)
 
 # Set up the Telegram client
 api_id = 16844842
-api_hash = 'YOUR_API_HASH'
-bot_token = '5931504207:AAHf6b0ceec5535804be7a56ac71d08a5d4NzBcYEEX7AD29L0TqWF28axqivgoaKUk'
+api_hash = 'f6b0ceec5535804be7a56ac71d08a5d4'
+bot_token = '5931504207:AAHNzBcYEEX7AD29L0TqWF28axqivgoaKUk'
 client = TelegramClient('client_name', api_id, api_hash).start(bot_token=bot_token)
 
 # Set up the banned rights
