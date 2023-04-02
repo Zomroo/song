@@ -15,12 +15,12 @@ bot = Client(
 )
 
 # Define the command handler for the /start command
-@app.on_message(filters.command('start'))
+@bot.on_message(filters.command('start'))
 def start_handler(client: Client, message: Message):
     message.reply_text('Hello! To get started, use the /lyc command followed by the name of a song to get its lyrics.')
 
 # Define the command handler for the /lyc command
-@app.on_message(filters.command('lyc'))
+@bot.on_message(filters.command('lyc'))
 def lyc_handler(client: Client, message: Message):
     # Get the song name from the message text
     song_name = ' '.join(message.command[1:])
@@ -36,4 +36,4 @@ def lyc_handler(client: Client, message: Message):
     message.reply_document(document=f'{song_name}.txt')
 
 # Start the bot
-app.run()
+bot.run()
