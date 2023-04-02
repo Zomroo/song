@@ -20,15 +20,18 @@ def start_handler(client: Client, message: Message):
     message.reply_text('Hello! To get started, use the /lyc command followed by the name of a song to get its lyrics.')
 
 # Define the command handler for the /lyc command
-@app.on_message(filters.command('lyc'))
+@bot.on_message(filters.command('lyc'))
 def lyc_handler(client: Client, message: Message):
     # Get the song name from the message text
     song_name = ' '.join(message.command[1:])
 
     # Search for the song lyrics using the Musixmatch API
-    api = musixmatch.Musixmatch('e86b5f48a332b3116e500790b650567c')
-    result = api.matcher_track_get(song_name, '', 1, 1)
-    track = result['message']['body']['track']
+    api = musixmatch.Musixmatch(musixmatch.api_key)
+    result = api.matcher_track_get(q_track=song_name, page_size=1, page=1, f_has_lyrics=1)
+    if not result['message']['body']:
+        message.reply_text('Sorry, I could not find the lyrics for that song.')
+        return
+    track = result['message']['body'][0]['track']
     track_id = track['track_id']
     lyrics_result = api.track_lyrics_get(track_id)
     lyrics = lyrics_result['message']['body']['lyrics']['lyrics_body']
