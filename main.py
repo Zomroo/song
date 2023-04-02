@@ -1,7 +1,7 @@
 from pyrogram import Client, filters
 import requests
 import os
-
+import pyrogram
 # Set up the Pyrogram client
 api_id = 16844842
 api_hash = 'f6b0ceec5535804be7a56ac71d08a5d4'
