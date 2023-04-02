@@ -20,18 +20,22 @@ def start_handler(client: Client, message: Message):
     message.reply_text('Hello! To get started, use the /lyc command followed by the name of a song to get its lyrics.')
 
 # Define the command handler for the /lyc command
-@bot.on_message(filters.command('lyc'))
+@app.on_message(filters.command('lyc'))
 def lyc_handler(client: Client, message: Message):
     # Get the song name from the message text
     song_name = ' '.join(message.command[1:])
 
     # Search for the song lyrics using the Musixmatch API
-    track = musixmatch.Track.search(song_name, page_size=1, page=1, f_has_lyrics=1)
-    lyrics = musixmatch.Track.lyrics(track[0].track_id)
+    api = musixmatch.Musixmatch('e86b5f48a332b3116e500790b650567c')
+    result = api.matcher_track_get(song_name, '', 1, 1)
+    track = result['message']['body']['track']
+    track_id = track['track_id']
+    lyrics_result = api.track_lyrics_get(track_id)
+    lyrics = lyrics_result['message']['body']['lyrics']['lyrics_body']
 
     # Send the lyrics as a text file to the user
     with open(f'{song_name}.txt', 'w') as f:
-        f.write(lyrics['lyrics_body'])
+        f.write(lyrics)
 
     message.reply_document(document=f'{song_name}.txt')
 
