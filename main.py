@@ -68,11 +68,12 @@ async def main():
     global group_owner_id
     async with app:
         # Get the group owner ID
-        chat_info = await app.get_chat(update.chat.id)
+        chat_info = await app.get_chat(GROUP_ID)  # Replace GROUP_ID with the ID of your group
         if chat_info.type == "supergroup":
             group_owner_id = chat_info.owner_user_id
         else:
             group_owner_id = chat_info.chat.id
         await app.run()
+
 
 asyncio.run(main())
