@@ -11,6 +11,7 @@ bot_token = '5931504207:AAHNzBcYEEX7AD29L0TqWF28axqivgoaKUk'
 bot = pyrogram.Client('my_bot', api_id, api_hash, bot_token=bot_token)
 
 # Define a function to fetch lyrics of a song
+# Define a function to fetch lyrics of a song
 def get_lyrics(song_name):
     # Prepare the search query
     query = song_name + ' lyrics'
@@ -23,6 +24,10 @@ def get_lyrics(song_name):
 
     # Find the first link in the search results page
     link = soup.find('a')['href']
+
+    # Check if the link is a valid URL
+    if not link.startswith('http'):
+        link = 'https://' + link
 
     # Fetch the lyrics from the lyrics page
     page = requests.get(link, headers=headers)
