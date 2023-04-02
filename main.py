@@ -5,7 +5,7 @@ from pyrogram import Client, filters
 from pyrogram.types import Message
 
 # Set up the Musixmatch API credentials
-musixmatch.api_key = 'e86b5f48a332b3116e500790b650567c'
+musixmatch.api_key() = 'e86b5f48a332b3116e500790b650567c'
 
 bot = Client(	
     "bot",	
