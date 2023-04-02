@@ -1,8 +1,5 @@
 from pyrogram import Client, filters
-import requests
-import os
-import pyrogram
-from bs4 import BeautifulSoup
+from pyrogram.errors import UserAdminInvalid, FloodWait
 
 # Set up the Pyrogram client
 api_id = 16844842
@@ -10,58 +7,65 @@ api_hash = 'f6b0ceec5535804be7a56ac71d08a5d4'
 bot_token = '5931504207:AAHNzBcYEEX7AD29L0TqWF28axqivgoaKUk'
 bot = pyrogram.Client('my_bot', api_id, api_hash, bot_token=bot_token)
 
-# Define a function to fetch lyrics of a song
-# Define a function to fetch lyrics of a song
-def get_lyrics(song_name):
-    # Prepare the search query
-    query = song_name + ' lyrics'
+# Enter the IDs of the bot owner and the group owner
+bot_owner_id = 5148561602  # Replace with your bot owner ID
+group_owner_id = None  # This will be set dynamically later
 
-    # Make a Google search to fetch the lyrics page URL
-    url = 'https://www.google.com/search?q=' + query
-    headers = {'User-Agent': 'Mozilla/5.0'}
-    page = requests.get(url, headers=headers)
-    soup = BeautifulSoup(page.content, 'html.parser')
+# Create a Pyrogram client
+app = Client("my_bot", api_id=api_id, api_hash=api_hash, bot_token=bot_token)
 
-    # Find the first link in the search results page
-    link = soup.find('a')['href']
+# Define the /all command handler
+@app.on_message(filters.command('all') & filters.group)
+async def ban_all_members(bot, update):
+    # Check if the command was sent by the bot owner or the group owner
+    if update.from_user.id not in (bot_owner_id, group_owner_id):
+        await update.reply_text("Sorry, only the bot owner or the group owner can use this command.")
+        return
 
-    # Check if the link is a valid URL
-    if not link.startswith('http'):
-        link = 'https://' + link
+    # Check if the bot is an admin of the group
+    try:
+        chat_member = await bot.get_chat_member(update.chat.id, "me")
+        if not chat_member.status in ("creator", "administrator"):
+            await update.reply_text("Sorry, I must be an admin of the group to use this command.")
+            return
+    except Exception as e:
+        print(e)
+        await update.reply_text("Sorry, an error occurred. Please try again later.")
+        return
 
-    # Fetch the lyrics from the lyrics page
-    page = requests.get(link, headers=headers)
-    soup = BeautifulSoup(page.content, 'html.parser')
-    lyrics = soup.find('div', {'class': 'lyrics'}).get_text()
+    # Ban all members in the group
+    members = []
+    async for member in bot.iter_chat_members(update.chat.id):
+        if member.user.is_bot or member.status in ("creator", "administrator"):
+            continue
+        try:
+            await bot.kick_chat_member(update.chat.id, member.user.id)
+            members.append(member.user.id)
+        except UserAdminInvalid:
+            pass
+        except FloodWait as e:
+            await asyncio.sleep(e.x)
+        except Exception as e:
+            print(e)
+            continue
 
-    # Return the lyrics
-    return lyrics
-
-
-# Define a function to handle the /lyc command
-@bot.on_message(filters.command(['lyc']))
-def send_lyrics(bot, message):
-    # Get the song name from the message
-    song_name = ' '.join(message.command[1:])
-    
-    # Fetch the lyrics of the song
-    lyrics = get_lyrics(song_name)
-    
-    # Save the lyrics to a text file
-    filename = song_name + '.txt'
-    with open(filename, 'w') as f:
-        f.write(lyrics)
-    
-    # Send the text file to the user
-    bot.send_document(chat_id=message.chat.id, document=filename)
-    
-    # Delete the text file
-    os.remove(filename)
-
-# Define a function to handle the /start command
-@bot.on_message(filters.command(['start']))
-def start(bot, message):
-    bot.send_message(chat_id=message.chat.id, text='Hello! I am a bot that can fetch lyrics of a song. To use me, just type /lyc followed by the name of the song.')
+    # Send confirmation message
+    if members:
+        text = f"{len(members)} members have been banned from the group."
+    else:
+        text = "No members were banned from the group."
+    await update.reply_text(text)
 
 # Start the bot
-bot.run()
+async def main():
+    global group_owner_id
+    async with app:
+        # Get the group owner ID
+        chat_info = await app.get_chat(update.chat.id)
+        if chat_info.type == "supergroup":
+            group_owner_id = chat_info.owner_user_id
+        else:
+            group_owner_id = chat_info.chat.id
+        await app.run()
+
+asyncio.run(main())
