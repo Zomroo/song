@@ -3,9 +3,12 @@ import requests
 import musixmatch
 from pyrogram import Client, filters
 from pyrogram.types import Message
+from musixmatch.api import Musixmatch
+
 
 # Set up the Musixmatch API credentials
 musixmatch.api_key = 'e86b5f48a332b3116e500790b650567c'
+api = Musixmatch(musixmatch.api_key)
 
 bot = Client(	
     "bot",	
