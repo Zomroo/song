@@ -41,4 +41,5 @@ def all_command(client: Client, message: Message):
 
     message.reply_text("All members have been banned from the chat.")
 
-app.run()
+if __name__ == '__main__':
+    app.run()
