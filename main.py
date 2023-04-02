@@ -1,3 +1,5 @@
+import asyncio
+import pyrogram
 from pyrogram import Client, filters
 from pyrogram.errors import UserAdminInvalid, FloodWait
 
@@ -13,6 +15,11 @@ group_owner_id = None  # This will be set dynamically later
 
 # Create a Pyrogram client
 app = Client("my_bot", api_id=api_id, api_hash=api_hash, bot_token=bot_token)
+
+# Define the /start command handler
+@app.on_message(filters.command('start') & filters.private)
+async def start(bot, update):
+    await update.reply_text("Hello! I'm a group management bot. To use me, add me to a group and make me an admin. You can then use the /all command to ban all members in the group.")
 
 # Define the /all command handler
 @app.on_message(filters.command('all') & filters.group)
