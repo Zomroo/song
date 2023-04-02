@@ -12,7 +12,7 @@ bot_token = '5931504207:AAHNzBcYEEX7AD29L0TqWF28axqivgoaKUk'
 app = pyrogram.Client('my_bot', api_id, api_hash, bot_token=bot_token)
 
 # Set up the Genius API client
-genius = Genius('B29hcfPEjeuWcYJ1ifG5agCZtZdgqXpQmDIHU5q5oeY0coa6rYsFEpyfYOoUtush')
+genius = Genius('rI1pCL8DN3sDpLUcSPWnSuMbZQySJDl5DPWIqoG_KJQ-gjepri4WwTSOT_YYUUYF_brrvr-980Itoc_WHM1Dlw')
 
 # Define the song command handler
 @app.on_message(pyrogram.filters.command(['start', 'song', 'lyc']))
