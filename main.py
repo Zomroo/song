@@ -1,48 +1,59 @@
-import os
-import requests
-import musixmatch
 from pyrogram import Client, filters
-from pyrogram.types import Message
-from musixmatch.api import Musixmatch
+import requests
+import os
 
-# Set up the Musixmatch API credentials
-musixmatch.api_key = 'e86b5f48a332b3116e500790b650567c'
-api = Musixmatch(musixmatch.api_key)
+# Replace with your own values
+API_ID = your_api_id
+API_HASH = 'your_api_hash'
+BOT_TOKEN = 'your_bot_token'
 
-bot = Client(    
-    "bot",    
-    api_id=16844842,  # Replace with your API ID    
-    api_hash="f6b0ceec5535804be7a56ac71d08a5d4",  # Replace with your API hash    
-    bot_token="5931504207:AAHNzBcYEEX7AD29L0TqWF28axqivgoaKUk"  # Replace with your bot token    
-)
+# Create a Pyrogram client
+bot = Client('my_bot', api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
 
-# Define the command handler for the /start command
-@bot.on_message(filters.command('start'))
-def start_handler(client: Client, message: Message):
-    message.reply_text('Hello! To get started, use the /lyc command followed by the name of a song to get its lyrics.')
+# Define a function to fetch lyrics of a song
+def get_lyrics(song_name):
+    # Prepare the search query
+    query = song_name + ' lyrics'
+    
+    # Make a Google search to fetch the lyrics page URL
+    url = 'https://www.google.com/search?q=' + query
+    headers = {'User-Agent': 'Mozilla/5.0'}
+    page = requests.get(url, headers=headers)
+    soup = BeautifulSoup(page.content, 'html.parser')
+    link = soup.find('div', {'class': 'BNeawe UPmit AP7Wnd'}).a['href']
+    
+    # Fetch the lyrics from the lyrics page
+    page = requests.get(link, headers=headers)
+    soup = BeautifulSoup(page.content, 'html.parser')
+    lyrics = soup.find('div', {'class': 'lyrics'}).get_text()
+    
+    # Return the lyrics
+    return lyrics
 
-# Define the command handler for the /lyc command
-@bot.on_message(filters.command('lyc'))
-def lyc_handler(client: Client, message: Message):
-    # Get the song name from the message text
+# Define a function to handle the /lyc command
+@bot.on_message(filters.command(['lyc']))
+def send_lyrics(bot, message):
+    # Get the song name from the message
     song_name = ' '.join(message.command[1:])
-
-    # Search for the song lyrics using the Musixmatch API
-    api = Musixmatch(musixmatch.api_key)
-    result = api.matcher_track_get(q_track=song_name, page_size=1, page=1, f_has_lyrics=1)
-    if not result['message']['body']:
-        message.reply_text('Sorry, I could not find the lyrics for that song.')
-        return
-    track = result['message']['body'][0]['track']
-    track_id = track['track_id']
-    lyrics_result = api.track_lyrics_get(track_id)
-    lyrics = lyrics_result['message']['body']['lyrics']['lyrics_body']
-
-    # Send the lyrics as a text file to the user
-    with open(f'{song_name}.txt', 'w') as f:
+    
+    # Fetch the lyrics of the song
+    lyrics = get_lyrics(song_name)
+    
+    # Save the lyrics to a text file
+    filename = song_name + '.txt'
+    with open(filename, 'w') as f:
         f.write(lyrics)
+    
+    # Send the text file to the user
+    bot.send_document(chat_id=message.chat.id, document=filename)
+    
+    # Delete the text file
+    os.remove(filename)
 
-    message.reply_document(document=f'{song_name}.txt')
+# Define a function to handle the /start command
+@bot.on_message(filters.command(['start']))
+def start(bot, message):
+    bot.send_message(chat_id=message.chat.id, text='Hello! I am a bot that can fetch lyrics of a song. To use me, just type /lyc followed by the name of the song.')
 
 # Start the bot
 bot.run()
