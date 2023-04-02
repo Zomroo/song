@@ -13,6 +13,12 @@ app = pyrogram.Client('my_bot', api_id, api_hash, bot_token=bot_token)
 # Define the song command handler
 @app.on_message(pyrogram.filters.command(['start', 'song']))
 def song_command_handler(client, message):
+    # Define an empty string to hold the message text
+    text = ''
+
+    # Get the song name from the message text
+    song_name = message.text.split(' ', 1)[1]
+    
     # Get the song name from the message text
     if message.command[0] == 'start':
         text = 'Welcome to my song bot!\nTo download a song, use the /song command followed by the name of the song.\nFor example, /song despacito'
