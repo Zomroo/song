@@ -5,16 +5,15 @@ from pyrogram import Client, filters
 from pyrogram.types import Message
 from musixmatch.api import Musixmatch
 
-
 # Set up the Musixmatch API credentials
 musixmatch.api_key = 'e86b5f48a332b3116e500790b650567c'
 api = Musixmatch(musixmatch.api_key)
 
-bot = Client(	
-    "bot",	
-    api_id=16844842,  # Replace with your API ID	
-    api_hash="f6b0ceec5535804be7a56ac71d08a5d4",  # Replace with your API hash	
-    bot_token="5931504207:AAHNzBcYEEX7AD29L0TqWF28axqivgoaKUk"  # Replace with your bot token	
+bot = Client(    
+    "bot",    
+    api_id=16844842,  # Replace with your API ID    
+    api_hash="f6b0ceec5535804be7a56ac71d08a5d4",  # Replace with your API hash    
+    bot_token="5931504207:AAHNzBcYEEX7AD29L0TqWF28axqivgoaKUk"  # Replace with your bot token    
 )
 
 # Define the command handler for the /start command
