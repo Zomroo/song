@@ -1,17 +1,13 @@
-import asyncio
 import pyrogram
 from pyrogram import Client, filters
 from pyrogram.errors import UserAdminInvalid, FloodWait
+import asyncio
 
 # Set up the Pyrogram client
 api_id = 16844842
 api_hash = 'f6b0ceec5535804be7a56ac71d08a5d4'
 bot_token = '5931504207:AAHNzBcYEEX7AD29L0TqWF28axqivgoaKUk'
 bot = pyrogram.Client('my_bot', api_id, api_hash, bot_token=bot_token)
-
-# Enter the IDs of the bot owner and the group owner
-bot_owner_id = 5148561602  # Replace with your bot owner ID
-group_owner_id = None  # This will be set dynamically later
 
 # Create a Pyrogram client
 app = Client("my_bot", api_id=api_id, api_hash=api_hash, bot_token=bot_token)
@@ -63,17 +59,16 @@ async def ban_all_members(bot, update):
         text = "No members were banned from the group."
     await update.reply_text(text)
 
+# Define the on_chat_member_joined handler
+@app.on_chat_member_join()
+async def on_chat_member_joined(bot, update):
+    # Check if the bot was added to the group
+    if update.new_chat_members and bot.get_me().id in [user.id for user in update.new_chat_members]:
+        # Make the bot an admin of the group
+        await bot.promote_chat_member(update.chat.id, bot.get_me().id, can_delete_messages=True, can_restrict_members=True)
+        # Send a welcome message
+        await bot.send_message(update.chat.id, "Hello! I'm a group management bot. To use me, add me to a group and make me an admin. You can then use the /all command to ban all members in the group.")
+
 # Start the bot
 async def main():
-    global group_owner_id
-    async with app:
-        # Get the group owner ID
-        chat_info = await app.get_chat(GROUP_ID)  # Replace GROUP_ID with the ID of your group
-        if chat_info.type == "supergroup":
-            group_owner_id = chat_info.owner_user_id
-        else:
-            group_owner_id = chat_info.chat.id
-        await app.run()
-
-
-asyncio.run(main())
+    global group_owner
