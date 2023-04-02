@@ -1,8 +1,5 @@
-import os
-import pyrogram
-import re
-import requests
-from pytube import YouTube
+from pyrogram import Client, filters
+import lyricsgenius
 
 # Set up the Pyrogram client
 api_id = 16844842
@@ -10,49 +7,37 @@ api_hash = 'f6b0ceec5535804be7a56ac71d08a5d4'
 bot_token = '5931504207:AAHNzBcYEEX7AD29L0TqWF28axqivgoaKUk'
 app = pyrogram.Client('my_bot', api_id, api_hash, bot_token=bot_token)
 
-# Define the song command handler
-@app.on_message(pyrogram.filters.command(['start', 'song']))
-def song_command_handler(client, message):
-    # Define an empty string to hold the message text
-    text = ''
 
-    # Get the song name from the message text
-    song_name = message.text.split(' ', 1)[1]
-    
-    # Get the song name from the message text
-    if message.command[0] == 'start':
-        text = 'Welcome to my song bot!\nTo download a song, use the /song command followed by the name of the song.\nFor example, /song despacito'
+def fetch_lyrics(song_name):
+    genius = lyricsgenius.Genius("<your-genius-api-key>")
+    song = genius.search_song(song_name)
+    if song:
+        return song.lyrics
     else:
-        song_name = message.text.split(' ', 1)[1]
-        
-        # Search for the song on YouTube and get the URL of the first video in the search results
-        search_url = f'https://www.youtube.com/results?search_query={song_name}&sp=EgIQAQ%253D%253D'
-        html = requests.get(search_url).text
-        video_ids = re.findall(r"watch\?v=(\S{11})", html)
-        video_url = f"https://www.youtube.com/watch?v={video_ids[0]}"
-        
-        # Download the audio and thumbnail of the video and send them to the user
-        try:
-            video = YouTube(video_url)
-            audio_stream = video.streams.filter(only_audio=True).first()
-            audio_stream.download(output_path='downloads/')
-            audio_file_path = os.path.join('downloads/', audio_stream.default_filename)
-            thumbnail_url = video.thumbnail_url
-            thumbnail_file_path = os.path.join('downloads/', f'{video.video_id}.jpg')
-            with open(thumbnail_file_path, 'wb') as f:
-                f.write(requests.get(thumbnail_url).content)
-            client.send_audio(
-                message.chat.id,
-                audio=open(audio_file_path, 'rb'),
-                thumb=open(thumbnail_file_path, 'rb'),
-                title=video.title,
-                performer=video.author
-            )
-        except Exception as e:
-            print(str(e))
-            text = 'Sorry, an error occurred while processing your request.'
+        return "Sorry, I couldn't find the lyrics for that song."
 
-    client.send_message(message.chat.id, text)
 
-# Start the Pyrogram client
+@app.on_message(filters.command("start"))
+def start(client, message):
+    message.reply_text(
+        "Hello! I can fetch the lyrics of a song for you. To get started, send me a message in the format /lyc song name."
+    )
+
+
+@app.on_message(filters.command("lyc"))
+def fetch_lyrics_command(client, message):
+    song_name = " ".join(message.command[1:])
+    lyrics = fetch_lyrics(song_name)
+    if lyrics == "Sorry, I couldn't find the lyrics for that song.":
+        message.reply_text(lyrics)
+    else:
+        with open(f"{song_name}.txt", "w") as file:
+            file.write(lyrics)
+        client.send_document(
+            message.chat.id,
+            document=f"{song_name}.txt",
+            caption=f"Lyrics of {song_name}"
+        )
+
+
 app.run()
