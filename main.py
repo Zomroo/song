@@ -1,44 +1,134 @@
-from pyrogram import Client, filters
+# Copyright ©️ 2023 Sanila Ranatunga. All Rights Reserved
+# You are free to use this code in any of your project, but you MUST include the following in your README.md (Copy & paste)
+# ##Credits - [Telegram-Lyrics-Bot](https://github.com/sanila2007/telegram-lyrics-bot)
+
+# Read GNU General Public License v3.0: https://github.com/sanila2007/telegram-lyrics-bot/blob/mai/LICENSE
+# Don't forget to follow github.com/sanila2007 because I am doing these things for free and open source
+# Star, fork, enjoy!
+
+import os
 import lyricsgenius
-import pyrogram
+from pyrogram import Client, filters
+from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, InlineQueryResultArticle, InputTextMessageContent
+from requests.exceptions import Timeout, HTTPError
+from pyrogram.errors import MessageTooLong
 
-# Set up the Pyrogram client
-api_id = 16844842
-api_hash = 'f6b0ceec5535804be7a56ac71d08a5d4'
-bot_token = '5931504207:AAHNzBcYEEX7AD29L0TqWF28axqivgoaKUk'
-app = pyrogram.Client('my_bot', api_id, api_hash, bot_token=bot_token)
+bot = Client(
+    "bot",
+    api_id=16844842,  # Replace with your API ID
+    api_hash="f6b0ceec5535804be7a56ac71d08a5d4",  # Replace with your API hash
+    bot_token="5931504207:AAHNzBcYEEX7AD29L0TqWF28axqivgoaKUk"  # Replace with your bot token
+)
+
+GENIUS = lyricsgenius.Genius(Config.TOKEN)
 
 
-def fetch_lyrics(song_name):
-    genius = lyricsgenius.Genius("bwQCIfxQqXqkuEFiXt6xY387J-L9b9GgfnHph85YcP0EQvC9ZpWG-js7okipBsFe")
-    song = genius.search_song(song_name)
-    if song:
-        return song.lyrics
+@bot.on_message(filters.command("start") & filters.private)
+async def start(bot, message):
+    await bot.send_message(message.chat.id, f"Hello **{message.from_user.first_name}**!!\n\nWelcome to Lyrics bot."
+                                            f"You can get lyrics of any song which is on Genius.com using this bot. Just"
+                                            f" send the name of the song that you want to get lyrics. This is"
+                                            f" quite simple.", reply_markup=InlineKeyboardMarkup(
+        [
+            [
+                InlineKeyboardButton("🔍Search inline...", switch_inline_query_current_chat="")
+            ]
+        ]
+    ))
+
+
+@bot.on_message(filters.text & filters.private)
+async def lyric_get(bot, message):
+    try:
+        m = await message.reply(
+            "🔍Searching..."
+        )
+        song_name = message.text
+        LYRICS = GENIUS.search_song(song_name)
+        if LYRICS is None:
+            await m.edit_text(
+                "❌Oops\nFound no result"
+            )
+        global TITLE
+        global ARTISTE
+        global TEXT
+        TITLE = LYRICS.title
+        ARTISTE = LYRICS.artist
+        TEXT = LYRICS.lyrics
+    except Timeout:
+        pass
+    except HTTPError as https_e:
+        print(https_e)
+    try:
+        await m.edit_text(
+            f"🎶Song Name: **{TITLE}**\n🎙️Artiste: **{ARTISTE}**\n\n`{TEXT}`", reply_markup=InlineKeyboardMarkup(
+                [
+                    [
+                        InlineKeyboardButton("🔍Search for lyrics...", switch_inline_query_current_chat="")
+                    ]
+                ]
+            )
+        )
+    except MessageTooLong:
+        with open(f'downloads/{TITLE}.txt', 'w') as file:
+            file.write(f'{TITLE}\n{ARTISTE}\n\n{TEXT}')
+            await m.edit_text(
+                "Changed into a text file because the text is too long..."
+            )
+            await bot.send_document(message.chat.id, document=f'downloads/{TITLE}.txt', caption=f'\n{TITLE}\n{ARTISTE}')
+            os.remove(f'downloads/{TITLE}.txt')
+
+
+@bot.on_inline_query()
+async def inlinequery(client, inline_query):
+    answer = []
+    if inline_query.query == "":
+        await inline_query.answer(
+            results=[
+
+                InlineQueryResultArticle(
+                    title="Search to get lyrics...",
+                    description="Lyrics bot",
+                    reply_markup=InlineKeyboardMarkup(
+                        [
+                            [
+                                InlineKeyboardButton("🔍Search for Lyrics..", switch_inline_query_current_chat="")
+                            ]
+                        ]
+                    ),
+                    input_message_content=InputTextMessageContent(
+                        "Search for lyrics inline..."
+                    )
+                )
+            ]
+        )
     else:
-        return "Sorry, I couldn't find the lyrics for that song."
-
-
-@app.on_message(filters.command("start"))
-def start(client, message):
-    message.reply_text(
-        "Hello! I can fetch the lyrics of a song for you. To get started, send me a message in the format /lyc song name."
+        INLINE_SONG = inline_query.query
+        print(INLINE_SONG)
+        INLINE_LYRICS = GENIUS.search_song(INLINE_SONG)
+        INLINE_TITLE = INLINE_LYRICS.title
+        INLINE_ARTISTE = INLINE_LYRICS.artist
+        INLINE_TEXT = INLINE_LYRICS.lyrics
+        answer.append(
+            InlineQueryResultArticle(
+                title=INLINE_TITLE,
+                description=INLINE_ARTISTE,
+                reply_markup=InlineKeyboardMarkup(
+                    [
+                        [
+                            InlineKeyboardButton("❌Wrong result?", switch_inline_query_current_chat=INLINE_SONG),
+                            InlineKeyboardButton("🔍Search again..", switch_inline_query_current_chat="")
+                        ]
+                    ]
+                ),
+                input_message_content=InputTextMessageContent(f"**Inline lyrics result...**\n\n🎶Name: **{INLINE_TITLE}**\n🎙️Artiste: **{INLINE_ARTISTE}**\n\n`{INLINE_TEXT}`")
+            )
+        )
+    await inline_query.answer(
+        results=answer,
+        cache_time=1
     )
 
 
-@app.on_message(filters.command("lyc"))
-def fetch_lyrics_command(client, message):
-    song_name = " ".join(message.command[1:])
-    lyrics = fetch_lyrics(song_name)
-    if lyrics == "Sorry, I couldn't find the lyrics for that song.":
-        message.reply_text(lyrics)
-    else:
-        with open(f"{song_name}.txt", "w") as file:
-            file.write(lyrics)
-        client.send_document(
-            message.chat.id,
-            document=f"{song_name}.txt",
-            caption=f"Lyrics of {song_name}"
-        )
-
-
-app.run()
+print("Lyric bot is online")
+bot.run()
