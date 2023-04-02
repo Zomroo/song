@@ -29,7 +29,7 @@ def lyc_handler(client: Client, message: Message):
     song_name = ' '.join(message.command[1:])
 
     # Search for the song lyrics using the Musixmatch API
-    api = musixmatch.Musixmatch(musixmatch.api_key)
+    api = Musixmatch(musixmatch.api_key)
     result = api.matcher_track_get(q_track=song_name, page_size=1, page=1, f_has_lyrics=1)
     if not result['message']['body']:
         message.reply_text('Sorry, I could not find the lyrics for that song.')
