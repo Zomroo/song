@@ -14,21 +14,24 @@ bot = pyrogram.Client('my_bot', api_id, api_hash, bot_token=bot_token)
 def get_lyrics(song_name):
     # Prepare the search query
     query = song_name + ' lyrics'
-    
+
     # Make a Google search to fetch the lyrics page URL
     url = 'https://www.google.com/search?q=' + query
     headers = {'User-Agent': 'Mozilla/5.0'}
     page = requests.get(url, headers=headers)
     soup = BeautifulSoup(page.content, 'html.parser')
-    link = soup.find('div', {'class': 'BNeawe UPmit AP7Wnd'}).a['href']
-    
+
+    # Find the first link in the search results page
+    link = soup.find('a')['href']
+
     # Fetch the lyrics from the lyrics page
     page = requests.get(link, headers=headers)
     soup = BeautifulSoup(page.content, 'html.parser')
     lyrics = soup.find('div', {'class': 'lyrics'}).get_text()
-    
+
     # Return the lyrics
     return lyrics
+
 
 # Define a function to handle the /lyc command
 @bot.on_message(filters.command(['lyc']))
