@@ -35,40 +35,43 @@ def song_command_handler(client, message):
         
         # Download the audio and thumbnail of the video and send them to the user
         try:
-            if message.command[0] == 'vid':
-                video_url = message.command[1]
-                video = pafy.new(video_url)
-                bestaudio = video.getbestaudio()
-                audio_file_path = f"{video.title}.mp3"
-                thumbnail_file_path = f"{video.title}.jpg"
-                bestaudio.download(audio_file_path, quiet=True)
-                video.getbestthumb().download(thumbnail_file_path, quiet=True)
-                client.send_audio(
-                    message.chat.id,
-                    audio=open(audio_file_path, 'rb'),
-                    thumb=open(thumbnail_file_path, 'rb'),
-                    title=video.title,
-                    performer=video.author
-                )
-            elif message.command[0] == 'lyc':
-    song_name = message.text.split(' ', 1)[1]
-    # Get the lyrics of the song using the Musixmatch API
-    try:
-        response = musixmatch_api.matcher_lyrics_get(song_name, '', 1)
-        track_id = response['message']['body']['track']['track_id']
-        lyrics = musixmatch_api.track_lyrics_get(track_id)['message']['body']['lyrics']['lyrics_body']
-        with open('lyrics.txt', 'w') as f:
-            f.write(lyrics)
-        client.send_document(
+    if message.command[0] == 'vid':
+        video_url = message.command[1]
+        video = pafy.new(video_url)
+        bestaudio = video.getbestaudio()
+        audio_file_path = f"{video.title}.mp3"
+        thumbnail_file_path = f"{video.title}.jpg"
+        bestaudio.download(audio_file_path, quiet=True)
+        video.getbestthumb().download(thumbnail_file_path, quiet=True)
+        client.send_audio(
             message.chat.id,
-            document=open('lyrics.txt', 'rb'),
-            caption=f"Lyrics of {response['message']['body']['artist_name']} - {response['message']['body']['track']['track_name']}"
+            audio=open(audio_file_path, 'rb'),
+            thumb=open(thumbnail_file_path, 'rb'),
+            title=video.title,
+            performer=video.author
         )
-    except Exception as e:
-        print(str(e))
-        text = 'Sorry, an error occurred while processing your request.'
-else:
-    text = 'Invalid command'
+    elif message.command[0] == 'lyc':
+        song_name = message.text.split(' ', 1)[1]
+        # Get the lyrics of the song using the Musixmatch API
+        try:
+            response = musixmatch_api.matcher_lyrics_get(song_name, '', 1)
+            track_id = response['message']['body']['track']['track_id']
+            lyrics = musixmatch_api.track_lyrics_get(track_id)['message']['body']['lyrics']['lyrics_body']
+            with open('lyrics.txt', 'w') as f:
+                f.write(lyrics)
+            client.send_document(
+                message.chat.id,
+                document=open('lyrics.txt', 'rb'),
+                caption=f"Lyrics of {response['message']['body']['artist_name']} - {response['message']['body']['track']['track_name']}"
+            )
+        except Exception as e:
+            print(str(e))
+            text = 'Sorry, an error occurred while processing your request.'
+    else:
+        text = 'Invalid command'
+except IndexError:
+    text = 'Please provide a valid command'
+
 try:
     # If there is a message to send, send it
     if 'text' in locals():
@@ -84,4 +87,3 @@ finally:
 
 # Run the client
 app.run()
-
