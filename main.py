@@ -2,6 +2,7 @@ import pyrogram
 from pyrogram import Client, filters
 from pyrogram.errors import UserAdminInvalid, FloodWait
 import asyncio
+from pyrogram import filters
 
 # Set up the Pyrogram client
 api_id = 16844842
