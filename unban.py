@@ -14,18 +14,17 @@ app = Client("my_bot", bot_token=BOT_TOKEN)
 
 # Define function to unban all users in a group
 async def unban_all_users():
-    async with app:
-        # Get list of banned users in the group
-        banned_users = await app.get_chat_members(
+    # Get list of banned users in the group
+    banned_users = app.get_chat_members(
+        chat_id=GROUP_ID,
+        filter="kicked"
+    )
+    # Unban each user
+    async for user in banned_users:
+        await app.unban_chat_member(
             chat_id=GROUP_ID,
-            filter="kicked"
+            user_id=user.user.id
         )
-        # Unban each user
-        for user in banned_users:
-            await app.unban_chat_member(
-                chat_id=GROUP_ID,
-                user_id=user.user.id
-            )
 
 # Call the function to unban all users
 app.run(unban_all_users())
