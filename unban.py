@@ -1,5 +1,5 @@
 from pyrogram import Client, filters
-from pyrogram.types import ChatPermissions
+from pyrogram.types import ChatPermissions, ChatMembersFilter
 
 # Add your own API ID and API Hash from the Telegram API website
 api_id = 16844842
@@ -23,7 +23,7 @@ def unban_all_members(client, message):
         return
 
     # retrieve the list of banned users
-    banned_members = client.get_chat_members(message.chat.id, filter="banned")
+    banned_members = client.get_chat_members(message.chat.id, filter=ChatMembersFilter.BANNED)
 
     # unban each member one by one
     for member in banned_members:
