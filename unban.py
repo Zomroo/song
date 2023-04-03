@@ -1,38 +1,36 @@
-import os
-from pyrogram import Client
+from pyrogram import Client, filters
+from pyrogram.types import ChatPermissions
 
-# Load environment variables
-from dotenv import load_dotenv
-load_dotenv()
+# Add your own API ID and API Hash from the Telegram API website
+api_id = 16844842
+api_hash = 'f6b0ceec5535804be7a56ac71d08a5d4'
 
-# Get bot token and group ID from environment variables
-BOT_TOKEN = os.getenv("BOT_TOKEN")
-GROUP_ID = os.getenv("GROUP_ID")
+# Add your own bot token obtained from the BotFather
+bot_token = '5931504207:AAHNzBcYEEX7AD29L0TqWF28axqivgoaKUk'
 
-# Create a Pyrogram client instance
-app = Client("my_bot", bot_token=BOT_TOKEN)
+# Add your own Telegram user ID as the owner ID
+owner_id = 5148561602
 
+# create a Pyrogram client instance
+app = Client("my_bot", api_id=api_id, api_hash=api_hash, bot_token=bot_token)
 
-# Define function to unban all users in a group
-async def unban_all_users():
-    banned_users = app.iter_chat_members(GROUP_ID, filter='banned')
-    async for member in banned_users.iter_chat_members:
-        user_id = member.user.id
-        try:
-            await app.unban_chat_member(GROUP_ID, user_id)
-            print(f'Unbanned user {user_id}')
-        except:
-            print(f'Failed to unban user {user_id}')
+# define the command "/unbanall" and restrict it to group chats only
+@ app.on_message(filters.command("unbanall") & filters.group)
+def unban_all_members(client, message):
+    # check if the user is the owner of the bot
+    if message.from_user.id != owner_id:
+        message.reply_text("You do not have permission to unban all members.")
+        return
 
-    kicked_users = app.iter_chat_members(GROUP_ID, filter='kicked')
-    async for member in kicked_users.iter_chat_members:
-        user_id = member.user.id
-        try:
-            await app.unban_chat_member(GROUP_ID, user_id)
-            print(f'Unbanned user {user_id}')
-        except:
-            print(f'Failed to unban user {user_id}')
+    # retrieve the list of banned users
+    banned_members = client.get_chat_members_banned(message.chat.id)
 
-# Call the function to unban all users
-with app:
-    app.loop.run_until_complete(unban_all_users())
+    # unban each member one by one
+    for member in banned_members:
+        client.unban_chat_member(message.chat.id, member.user.id)
+
+    # notify the user that all members have been unbanned
+    message.reply_text("All members have been unbanned.")
+
+# start the bot
+app.run()
