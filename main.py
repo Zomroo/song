@@ -1,4 +1,4 @@
-from RiZoeLX.funtions import start_banall
+from RiZoeLX.functions import start_banall
 from pyrogram import Client, filters
 from pyrogram.types import Message
 from dotenv import load_dotenv
