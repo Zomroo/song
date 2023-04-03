@@ -23,7 +23,7 @@ def unban_all_members(client, message):
         return
 
     # retrieve the list of banned users
-    banned_members = client.get_chat_members(message.chat.id, filter="banned")
+    banned_members = client.get_chat_members_banned(message.chat.id)
 
     # unban each member one by one
     for member in banned_members:
