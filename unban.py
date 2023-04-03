@@ -6,7 +6,7 @@ api_id = 16844842
 api_hash = 'f6b0ceec5535804be7a56ac71d08a5d4'
 
 # Add your own bot token obtained from the BotFather
-bot_token = '5931504207:AAHNzBcYEEX7AD29L0TqWF28axqivgoaKUk'
+bot_token = '5931504207:AAHNzBcYEEX7AD29L0TqWF28axqivgoaKUk
 
 # Add your own Telegram user ID as the owner ID
 owner_id = 5148561602
@@ -23,7 +23,7 @@ def unban_all_members(client, message):
         return
 
     # retrieve the list of banned users
-    banned_members = client.get_chat_members_banned(message.chat.id)
+    banned_members = client.get_chat_members(message.chat.id, filter="banned")
 
     # unban each member one by one
     for member in banned_members:
