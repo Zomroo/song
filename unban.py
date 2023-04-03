@@ -14,7 +14,7 @@ app = Client("my_bot", bot_token=BOT_TOKEN)
 
 # Define function to unban all users in a group
 async def unban_all_users():
-    chat_id = int(GROUP_ID)
+    chat_id = os.getenv('CHAT_ID')
     async for member in app.iter_chat_members(chat_id, filter='banned'):
         user_id = member.user.id
         try:
@@ -23,7 +23,5 @@ async def unban_all_users():
         except:
             print(f'Failed to unban user {user_id}')
 
-# Start the client and call the function to unban all users
-app.start()
-with app:
-    app.loop.run_until_complete(unban_all_users())
+# Call the function to unban all users
+app.run(unban_all_users())
